@@ -43,7 +43,7 @@ public class CoreModTracker {
      * @throws IOException     If an I/O error occurs while reading the file, usually due to a corrupt or missing file
      * @see net.minecraftforge.coremod.api.ASMAPI#loadFile(String)
      */
-    public static boolean loadFileByName(final String file) throws ScriptException, IOException {
+    public static boolean loadFileByName(final String file) throws IOException {
         final CoreMod tracked = LOCAL.get().tracked;
         if (tracked != null) {
             return tracked.loadAdditionalFile(file);
@@ -62,7 +62,7 @@ public class CoreModTracker {
      * @see net.minecraftforge.coremod.api.ASMAPI#loadData(String)
      */
     @Nullable
-    public static Object loadDataByName(final String file) throws ScriptException, IOException {
+    public static Object loadDataByName(final String file) throws IOException {
         final CoreMod tracked = LOCAL.get().tracked;
         if (tracked != null) {
             return tracked.loadAdditionalData(file);

@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Copyright (c) Forge Development LLC
-    SPDX-License-Identifier: LGPL-3.0-only
+    SPDX-License-Identifier: LGPL-2.1-only
 -->
-
 <Configuration status="OFF" packages="cpw.mods.modlauncher">
     <filters>
         <MarkerFilter marker="MODLAUNCHER" onMatch="DENY" onMismatch="DENY" />
