@@ -120,10 +120,17 @@ public class CoreMod {
 
 
     private static String map(String name, INameMappingService.Domain domain) {
-    	if (Launcher.INSTANCE == null || Launcher.INSTANCE.environment() == null)
-    		return name;
-    	var mapper = Launcher.INSTANCE.environment().findNameMapping("srg").orElse(null);
-    	return mapper == null ? name : mapper.apply(domain, name);
+        final class LazyInit {
+            static final BiFunction<INameMappingService.Domain, String, String> MAPPER;
+            static {
+                BiFunction<INameMappingService.Domain, String, String> mapper = null;
+                if (Launcher.INSTANCE != null && Launcher.INSTANCE.environment() != null) {
+                    mapper = Launcher.INSTANCE.environment().findNameMapping("srg").orElse(null);
+                }
+                MAPPER = mapper;
+            }
+        }
+        return LazyInit.MAPPER == null ? name : LazyInit.MAPPER.apply(domain, name);
     }
 
     /**
