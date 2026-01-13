@@ -4,8 +4,9 @@
  */
 package net.minecraftforge.coremod;
 
+import cpw.mods.modlauncher.Launcher;
+import cpw.mods.modlauncher.api.INameMappingService;
 import cpw.mods.modlauncher.api.ITransformer;
-import net.minecraftforge.coremod.api.ASMAPI;
 import net.minecraftforge.coremod.transformer.CoreModClassTransformer;
 import net.minecraftforge.coremod.transformer.CoreModFieldTransformer;
 import net.minecraftforge.coremod.transformer.CoreModMethodTransformer;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -105,15 +107,29 @@ public class CoreMod {
                 return new CoreModClassTransformer(this, coreName, targets, NashornFactory.getFunction(function));
             case METHOD:
                 targets = Collections.singleton(ITransformer.Target.targetMethod(
-                    (String) targetData.get("class"), ASMAPI.mapMethod((String) targetData.get("methodName")), (String) targetData.get("methodDesc")));
+                    (String) targetData.get("class"), map((String) targetData.get("methodName"), INameMappingService.Domain.METHOD), (String) targetData.get("methodDesc")));
                 return new CoreModMethodTransformer(this, coreName, targets, NashornFactory.getFunction(function));
             case FIELD:
                 targets = Collections.singleton(ITransformer.Target.targetField(
-                    (String) targetData.get("class"), ASMAPI.mapField((String) targetData.get("fieldName"))));
+                    (String) targetData.get("class"), map((String)targetData.get("fieldName"), INameMappingService.Domain.FIELD)));
                 return new CoreModFieldTransformer(this, coreName, targets, NashornFactory.getFunction(function));
             default:
                 throw new RuntimeException("Unimplemented target type " + targetData);
         }
+    }
+
+    private static String map(String name, INameMappingService.Domain domain) {
+        final class LazyInit {
+            static final BiFunction<INameMappingService.Domain, String, String> MAPPER;
+            static {
+                BiFunction<INameMappingService.Domain, String, String> mapper = null;
+                if (Launcher.INSTANCE != null && Launcher.INSTANCE.environment() != null) {
+                    mapper = Launcher.INSTANCE.environment().findNameMapping("srg").orElse(null);
+                }
+                MAPPER = mapper;
+            }
+        }
+        return LazyInit.MAPPER == null ? name : LazyInit.MAPPER.apply(domain, name);
     }
 
     /**
@@ -154,13 +170,17 @@ public class CoreMod {
      * @throws ScriptException If the script engine encounters an error, usually due to a syntax error in the script
      * @throws IOException     If an I/O error occurs while reading the file, usually due to a corrupt or missing file
      */
-    public boolean loadAdditionalFile(final String fileName) throws ScriptException, IOException {
+    public boolean loadAdditionalFile(final String fileName) throws IOException {
         // why does this method return a boolean if we're going to crash anyways on load failure?
         // it looks like the case of the coremod not being tracked is never reached
         if (this.loaded) return false;
 
         Reader additional = this.file.getAdditionalFile(fileName);
-        this.scriptEngine.eval(additional);
+        try {
+        	this.scriptEngine.eval(additional);
+        } catch (ScriptException e) {
+        	return sneak(e);
+        }
         return true;
     }
 
@@ -174,7 +194,7 @@ public class CoreMod {
      * @throws IOException     If an I/O error occurs while reading the file, usually due to a corrupt or missing file
      */
     @Nullable
-    public Object loadAdditionalData(final String fileName) throws ScriptException, IOException {
+    public Object loadAdditionalData(final String fileName) throws IOException {
         // again with this shit, dude! why are we going to return null??
         // isn't the coremod always going to be tracked if it calls ASMAPI.loadData from itself?
         if (this.loaded) return null;
@@ -188,7 +208,16 @@ public class CoreMod {
             builder.append(buf, 0, numChars);
         String str = builder.toString();
 
-        return this.scriptEngine.eval("tmp_json_loading_variable = " + str + ";");
+        try {
+        	return this.scriptEngine.eval("tmp_json_loading_variable = " + str + ";");
+        } catch (ScriptException e) {
+        	return sneak(e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+	private static <E extends Throwable, R> R sneak(Throwable e) throws E {
+        throw (E)e;
     }
 
     /**

@@ -9,11 +9,11 @@ permissions:
 
 jobs:
   build:
-    uses: MinecraftForge/SharedActions/.github/workflows/gradle.yml@main
+    uses: MinecraftForge/SharedActions/.github/workflows/gradle.yml@v0
     with:
       java: 17
-      gradle_tasks: "publish"
-      artifact_name: "coremods"
+      gradle_tasks: "publish coremods-api:publish"
+      artifact_name: "coremods,coremods-api"
     secrets:
       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       PROMOTE_ARTIFACT_WEBHOOK: ${{ secrets.PROMOTE_ARTIFACT_WEBHOOK }}

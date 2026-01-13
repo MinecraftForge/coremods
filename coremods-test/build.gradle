@@ -2,7 +2,6 @@ plugins {
     id 'eclipse'
     id 'java-library'
     alias libs.plugins.license
-    alias libs.plugins.modules
     //alias libs.plugins.versions
     alias libs.plugins.gradleutils
 }
@@ -56,11 +55,6 @@ dependencies {
     testImplementation(libs.unsafe)
     testRuntimeOnly(libs.bundles.junit.runtime)
     testCompileOnly(libs.nulls)
-}
-
-extraJavaModuleInfo {
-    failOnMissingModuleInfo = false
-    automaticModule('jopt-simple-5.0.4.jar', 'jopt.simple')
 }
 
 // If we are being told a specific vendor then we are probably being run in parallel

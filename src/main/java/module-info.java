@@ -5,8 +5,6 @@
 module net.minecraftforge.coremod {
     // CoreMods framework
     exports net.minecraftforge.coremod;
-    // ASMAPI
-    exports net.minecraftforge.coremod.api;
 
     requires cpw.mods.modlauncher;
     requires net.minecraftforge.forgespi;

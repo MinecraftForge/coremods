@@ -6,12 +6,10 @@ plugins {
     alias libs.plugins.license
     //alias libs.plugins.versions
     alias libs.plugins.gradleutils
-    alias libs.plugins.gitversion
-    alias libs.plugins.changelog
 }
 
 group = 'net.minecraftforge'
-version = gitversion.tagOffset
+version = rootProject.version
 println "Version: $version"
 
 java {
@@ -25,48 +23,41 @@ repositories {
     mavenLocal()
 }
 
-changelog {
-    from '1.0.0'
-    publishAll = false
-}
-
 license {
-    header = file('LICENSE-header.txt')
+    header = rootProject.file('LICENSE-header.txt')
     newLine = false
 }
 
 dependencies {
     compileOnly(libs.modlauncher)
-    compileOnly(libs.securemodules)
-    compileOnly(libs.log4j.api)
+    compileOnly(libs.securemodules) // Needed by Modlauncher
+
     compileOnly(libs.nulls)
-    compileOnly(libs.forgespi)
+    compileOnly(rootProject)
 
     api(libs.bundles.asm)
-    implementation(libs.nashorn)
 }
 
 tasks.named('jar', Jar) {
     manifest {
         attributes([
-            'Specification-Title': 'coremods',
+            'Specification-Title': 'coremods-api',
             'Specification-Vendor': 'Forge Development LLC',
             'Specification-Version': '1', // TODO: Use the tag
             'Implementation-Title': project.name,
             'Implementation-Version': project.version,
             'Implementation-Vendor' :'Forge Development LLC'
-        ], 'net/minecraftforge/coremod/')
+        ], 'net/minecraftforge/coremod/api/')
     }
 }
 
 publishing {
     publications.register('mavenJava', MavenPublication) {
-    	changelog.publish(it)
         pom {
             from components.java
-            artifactId = 'coremods'
-            name = 'Core Mods'
-            description = 'JavaScript based core modding framework for use with Forge'
+            artifactId = 'coremods-api'
+            name = 'Core Mods API'
+            description = 'API that is useful for Minecraft Transformers'
             url = 'https://github.com/MinecraftForge/coremods'
 
             gradleutils.pom.addRemoteDetails(pom)
@@ -82,21 +73,6 @@ publishing {
     repositories {
         maven gradleutils.publishingForgeMaven
     }
-}
-
-allprojects {
-    ext.VALID_VMS = [
-        'Adoptium':  (17..21),
-        'Amazon':    (17..21),
-        'Azul':      (17..21),
-        'BellSoft':  (17..21),
-        'Graal_VM':  [17,     19, 20, 21],
-        'IBM':       [17, 18, 19, 20    ],
-        'Microsoft': [17,             21],
-        'Oracle':    (17..21),
-        'SAP':       (17..20)
-    ]
-    ext.VALID_VMS = [ 'Adoptium':  [17] ]
 }
 
 idea.module {

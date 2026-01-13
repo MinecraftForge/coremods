@@ -6,8 +6,9 @@ package net.minecraftforge.coremod.api;
 
 import cpw.mods.modlauncher.Launcher;
 import cpw.mods.modlauncher.api.INameMappingService;
-import net.minecraftforge.coremod.CoreModEngine;
+import cpw.mods.modlauncher.api.TypesafeMap;
 import net.minecraftforge.coremod.CoreModTracker;
+
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
@@ -15,7 +16,6 @@ import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceClassVisitor;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -31,7 +31,7 @@ import java.util.function.Function;
  * to prevent boilerplate code, excessive imports, unnecessary loops, and to provide a more user-friendly API for
  * coremod developers.
  */
-@SuppressWarnings({"unused", "exports"}) // annoying IDE warnings
+@SuppressWarnings({"exports"}) // annoying IDE warnings
 public class ASMAPI {
     /* BUILDING INSTRUCTION LISTS */
 
@@ -473,7 +473,7 @@ public class ASMAPI {
      *     {@link #findFirstInstructionBefore(MethodNode, int, InsnType, int, boolean)}.
      */
     public static @Nullable AbstractInsnNode findFirstInstructionBefore(MethodNode method, int opCode, @Nullable InsnType type, int startIndex) {
-        return findFirstInstructionBefore(method, opCode, type, startIndex, !CoreModEngine.DO_NOT_FIX_INSNBEFORE);
+        return findFirstInstructionBefore(method, opCode, type, startIndex, !DO_NOT_FIX_INSNBEFORE);
     }
 
     /**
@@ -1171,8 +1171,11 @@ public class ASMAPI {
      *
      * @throws ScriptException If the script engine encounters an error, usually due to a syntax error in the script
      * @throws IOException     If an I/O error occurs while reading the file, usually due to a corrupt or missing file
+     *
+     * @apiNote This method only functions for JavaScript coremods managed by the main CoreMod engine.
+     * If using ASMAPI in a normal transformer do not use this method. Unknown exceptions could be thrown.
      */
-    public static boolean loadFile(String file) throws ScriptException, IOException {
+    public static boolean loadFile(String file) throws IOException {
         return CoreModTracker.loadFileByName(file);
     }
 
@@ -1184,10 +1187,13 @@ public class ASMAPI {
      *     {@code initializeCoreMod()} or any of the transformer functions returned by it.
      *
      * @throws ScriptException If the parsed JSON data is malformed
-     * @throws IOException     If an I/O error occurs while reading the file, usually due to a corrupt or missing file
+     * @throws IOException     If an I/O error occurs while reading the file, usually due to a corrupt or missing file.
+     *
+     * @apiNote This method only functions for JavaScript coremods managed by the main CoreMod engine.
+     * If using ASMAPI in a normal transformer do not use this method. Unknown exceptions could be thrown.
      */
     @Nullable
-    public static Object loadData(String file) throws ScriptException, IOException {
+    public static Object loadData(String file) throws IOException {
         return CoreModTracker.loadDataByName(file);
     }
 
@@ -1202,6 +1208,9 @@ public class ASMAPI {
      * @param message The message
      * @param args    Any formatting arguments
      * @see CoreModTracker#log(String, String, Object[])
+     *
+     * @apiNote This method only functions for JavaScript coremods managed by the main CoreMod engine.
+     * If using ASMAPI in a normal transformer do not use this method. Unknown exceptions could be thrown.
      */
     public static void log(String level, String message, Object... args) {
         CoreModTracker.log(level, message, args);
@@ -1292,5 +1301,30 @@ public class ASMAPI {
     // private because this is really only used to clamp indexes
     private static int clamp(int value, int min, int max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    // INTERNAL
+    /**
+     * Whether to preserve the legacy behavior of
+     * {@link net.minecraftforge.coremod.api.ASMAPI#findFirstInstructionBefore(org.objectweb.asm.tree.MethodNode, int,
+     * int)} for backwards-compatibility.
+     * <p>
+     * In Forge's case, this is set by FML in Minecraft 1.21.1 and earlier, but not in 1.21.3 and later.
+     *
+     * @see net.minecraftforge.coremod.api.ASMAPI#findFirstInstructionBefore(org.objectweb.asm.tree.MethodNode, int,
+     *     int)
+     */
+    private static final boolean DO_NOT_FIX_INSNBEFORE = shouldntFixInsnBefore();
+
+    private static final boolean shouldntFixInsnBefore() {
+    	try {
+	        if (Launcher.INSTANCE == null)
+	            return false;
+
+	        var blackboardVar = Launcher.INSTANCE.blackboard().get(TypesafeMap.Key.getOrCreate(Launcher.INSTANCE.blackboard(), "coremods.use_old_findFirstInstructionBefore", Boolean.class));
+	        return blackboardVar.isPresent() && blackboardVar.get();
+    	} catch (Throwable t) { // If ModLauncher doesn't exist.
+    		return false;
+    	}
     }
 }

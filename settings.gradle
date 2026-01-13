@@ -12,17 +12,19 @@ plugins {
 dependencyResolutionManagement {
     versionCatalogs {
         libs {
-            plugin('license', 'net.minecraftforge.licenser').version('1.0.1')
-            plugin('gradleutils', 'net.minecraftforge.gradleutils').version('[2.3,2.4)')
-            plugin('modules', 'org.gradlex.extra-java-module-info').version('1.9')
-            plugin('versions', 'com.github.ben-manes.versions').version('0.51.0')
-        
+            plugin 'license',     'net.minecraftforge.licenser'    version '1.2.0'
+            plugin 'gradleutils', 'net.minecraftforge.gradleutils' version '3.4.1'
+            plugin 'versions',    'com.github.ben-manes.versions'  version '0.51.0'
+            plugin 'gitversion',  'net.minecraftforge.gitversion'  version '3.1.7'
+            plugin 'changelog',   'net.minecraftforge.changelog'   version '3.2.1'
+
             version('asm', '9.7.1')
             library('asm',         'org.ow2.asm', 'asm'        ).versionRef('asm')
             library('asm-tree',    'org.ow2.asm', 'asm-tree'   ).versionRef('asm')
             library('asm-commons', 'org.ow2.asm', 'asm-commons').versionRef('asm')
-            bundle('asm', ['asm', 'asm-tree', 'asm-commons'])
-            
+            library('asm-util',    'org.ow2.asm', 'asm-util'   ).versionRef('asm')
+            bundle('asm', ['asm', 'asm-tree', 'asm-commons', 'asm-util'])
+
             version('junit', '5.11.4')
             library('junit-api', 'org.junit.jupiter', 'junit-jupiter-api').versionRef('junit')
             library('junit-engine', 'org.junit.jupiter', 'junit-jupiter-engine').versionRef('junit')
@@ -35,16 +37,16 @@ dependencyResolutionManagement {
             library('gson', 'com.google.code.gson:gson:2.10.1')
             library('jopt-simple', 'net.sf.jopt-simple:jopt-simple:5.0.4')
             */
-            
-            library('forgespi', 'net.minecraftforge:forgespi:7.1.0') 
+
+            library('forgespi', 'net.minecraftforge:forgespi:7.1.0')
             library('modlauncher', 'net.minecraftforge:modlauncher:10.1.1') // Needs securemodules
             library('nulls', 'org.jetbrains:annotations:26.0.1')
             library('nashorn', 'org.openjdk.nashorn:nashorn-core:15.4') // Needed by coremods, because the JRE no longer ships JS
-            
+
             // Used by our test aggrigator scripts
             library('ivy', 'org.apache.ivy:ivy:2.5.3')
             library('groovy', 'org.codehaus.groovy:groovy-all:3.0.23')
-            
+
             version('log4j', '2.17.0') // Needs to be kept in step with modlauncher because of its config.. TODO: Figure out why?
             library('log4j-api',  'org.apache.logging.log4j', 'log4j-api' ).versionRef('log4j')
             library('log4j-core', 'org.apache.logging.log4j', 'log4j-core').versionRef('log4j')
@@ -52,6 +54,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'CoreMods'
+rootProject.name = 'coremods'
+include 'coremods-api'
 include 'coremods-test'
 include 'coremods-test-jar'
