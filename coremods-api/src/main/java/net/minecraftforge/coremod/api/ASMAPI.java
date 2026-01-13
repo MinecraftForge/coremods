@@ -1121,7 +1121,6 @@ public class ASMAPI {
      *     still work for sake of backwards-compatibility, you should not be using this method if you are on 1.20.4 or
      *     later.
      */
-    @Deprecated(forRemoval = true, since = "5.2")
     public static String mapMethod(String name) {
         return map(name, INameMappingService.Domain.METHOD);
     }
@@ -1136,7 +1135,6 @@ public class ASMAPI {
      *     still work for sake of backwards-compatibility, you should not be using this method if you are on 1.20.4 or
      *     later.
      */
-    @Deprecated(forRemoval = true, since = "5.2")
     public static String mapField(String name) {
         return map(name, INameMappingService.Domain.FIELD);
     }
