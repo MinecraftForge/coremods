@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -116,8 +117,6 @@ public class CoreMod {
                 throw new RuntimeException("Unimplemented target type " + targetData);
         }
     }
-
-
 
     private static String map(String name, INameMappingService.Domain domain) {
         final class LazyInit {
