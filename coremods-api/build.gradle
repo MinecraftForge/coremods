@@ -53,6 +53,7 @@ tasks.named('jar', Jar) {
 
 publishing {
     publications.register('mavenJava', MavenPublication) {
+    	gradleutils.promote(it)
         pom {
             from components.java
             artifactId = 'coremods-api'
